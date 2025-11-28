@@ -1,33 +1,25 @@
 import { AppState } from '../types';
 import { INITIAL_STATE } from '../constants';
+import { loadAppState, saveAppState, clearAppState } from '../supabaseClient';
 
 const DB_KEY = 'adityas-life-os-db-v1';
 
 export const db = {
-  /**
-   * Simulates a database connection and fetching data.
-   * Merges saved data with INITIAL_STATE to ensure new fields (if added later) exist.
-   */
   connect: async (): Promise<AppState> => {
-    // Simulate network/disk delay for realism
     await new Promise(resolve => setTimeout(resolve, 800));
 
     try {
-      const serializedState = localStorage.getItem(DB_KEY);
-      if (serializedState === null) {
-        return INITIAL_STATE;
-      }
-      
-      const savedState = JSON.parse(serializedState);
-      
+      const remoteState = await loadAppState();
+      const baseState = remoteState ?? INITIAL_STATE;
+
       // Deep merge with INITIAL_STATE to ensure structure integrity
       // This prevents crashes if you add new features/fields later
       return {
         ...INITIAL_STATE,
-        ...savedState,
+        ...baseState,
         userSettings: {
           ...INITIAL_STATE.userSettings,
-          ...savedState.userSettings,
+          ...baseState.userSettings,
         }
       };
     } catch (err) {
@@ -36,23 +28,16 @@ export const db = {
     }
   },
 
-  /**
-   * Saves the current state to the database.
-   */
   save: (state: AppState): void => {
     try {
-      const serializedState = JSON.stringify(state);
-      localStorage.setItem(DB_KEY, serializedState);
+      void saveAppState(state);
     } catch (err) {
       console.error("Database Save Error:", err);
     }
   },
 
-  /**
-   * Clears the database (Factory Reset)
-   */
   clear: (): void => {
-    localStorage.removeItem(DB_KEY);
+    void clearAppState();
     window.location.reload();
   }
 };
