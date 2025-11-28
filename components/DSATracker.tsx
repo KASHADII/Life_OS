@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Check, Clock, ExternalLink, Lightbulb, PlayCircle, RefreshCcw, Plus, CheckCircle2 } from 'lucide-react';
+import { Brain, Check, Clock, ExternalLink, Lightbulb, PlayCircle, RefreshCcw, Plus, CheckCircle2, Trash2 } from 'lucide-react';
 import { DSAProblem, SRSStage, AppState } from '../types';
 import GlassCard from './GlassCard';
 import { SRS_INTERVALS } from '../constants';
@@ -78,6 +78,10 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
     // Show Toast
     setToast({ message: 'DSA problem added successfully!', visible: true });
     setTimeout(() => setToast({ message: '', visible: false }), 3000);
+  };
+
+  const deleteProblem = (id: string) => {
+    setProblems(prev => prev.filter(p => p.id !== id));
   };
 
   return (
@@ -188,6 +192,14 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
                         </div>
 
                         <div className="flex items-center gap-3">
+                             <button
+                                onClick={() => deleteProblem(problem.id)}
+                                className="p-2 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/30 transition-colors"
+                                title="Delete problem"
+                             >
+                                <Trash2 size={18} />
+                             </button>
+
                              <button 
                                 onClick={() => fetchHint(problem)}
                                 className="p-2 rounded-lg bg-yellow-500/10 text-yellow-300 hover:bg-yellow-500/20 transition-colors"

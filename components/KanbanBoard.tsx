@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, MoreHorizontal, Calendar, Tag, Wand2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Calendar, Tag, Wand2, Trash2 } from 'lucide-react';
 import { Task, TaskStatus, AppState, Category } from '../types';
 import GlassCard from './GlassCard';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,6 +26,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasks, setTasks }) => {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<Category>('Personal');
   const [aiLoading, setAiLoading] = useState(false);
+
+  const deleteTask = (taskId: string) => {
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+  };
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData('taskId', taskId);
@@ -129,8 +133,12 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasks, setTasks }) => {
                             <span className={`text-[10px] px-2 py-1 rounded-md border ${CATEGORY_COLORS[task.category]}`}>
                                 {task.category}
                             </span>
-                            <button className="text-glass-muted opacity-0 group-hover:opacity-100 hover:text-white transition-opacity">
-                                <MoreHorizontal size={16} />
+                            <button
+                                onClick={() => deleteTask(task.id)}
+                                className="p-1.5 rounded-full border border-red-500/30 bg-red-500/10 text-red-300 opacity-0 group-hover:opacity-100 hover:bg-red-500/20 hover:text-red-100 shadow-sm transition-all"
+                                aria-label="Delete task"
+                            >
+                                <Trash2 size={14} />
                             </button>
                          </div>
                          <h4 className="text-white font-medium text-sm leading-snug mb-3">{task.title}</h4>
