@@ -31,9 +31,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSa
     const newErrors: Record<string, string> = {};
     if (!formData.title.trim()) newErrors.title = 'Problem name is required';
     
-    if (!formData.link.trim()) {
-      newErrors.link = 'Link is required';
-    } else {
+    if (formData.link.trim()) {
       try {
         new URL(formData.link);
       } catch (_) {
@@ -174,7 +172,7 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSa
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-glass-muted ml-1">Problem Link <span className="text-pink-400">*</span></label>
+                  <label className="text-xs font-medium text-glass-muted ml-1">Problem Link <span className="text-glass-muted text-[10px]">(optional)</span></label>
                   <div className="relative">
                     <input
                       type="text"

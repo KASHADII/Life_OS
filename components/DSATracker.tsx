@@ -174,9 +174,11 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
                             </div>
                             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                                 {problem.title}
-                                <a href={problem.link} target="_blank" rel="noreferrer" className="text-glass-muted hover:text-blue-400 transition-colors">
-                                    <ExternalLink size={14} />
-                                </a>
+                                {problem.link && (
+                                    <a href={problem.link} target="_blank" rel="noreferrer" className="text-glass-muted hover:text-blue-400 transition-colors">
+                                        <ExternalLink size={14} />
+                                    </a>
+                                )}
                             </h3>
                             {problem.notes && (
                                 <p className="text-xs text-glass-muted mt-1 line-clamp-1 opacity-70 italic">"{problem.notes}"</p>
