@@ -28,9 +28,23 @@ export interface DSAProblem {
   notes?: string;
 }
 
+export interface TopicReview {
+  id: string;
+  title: string;
+  area?: string;
+  tags?: string[];
+  learnedOn: string;
+  lastReviewed?: string;
+  nextReview: string;
+  stage: SRSStage;
+  status: 'Learning' | 'Mastered';
+  notes?: string;
+}
+
 export interface AppState {
   tasks: Task[];
   problems: DSAProblem[];
+  topics: TopicReview[];
   userSettings: {
     name: string;
     internshipDate: string;
@@ -39,4 +53,4 @@ export interface AppState {
   };
 }
 
-export type View = 'dashboard' | 'kanban' | 'dsa' | 'settings';
+export type View = 'dashboard' | 'kanban' | 'dsa' | 'topics' | 'settings';

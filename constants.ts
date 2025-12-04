@@ -1,4 +1,4 @@
-import { AppState, Task, DSAProblem } from './types';
+import { AppState, Task, DSAProblem, TopicReview } from './types';
 import { addDays, format } from 'date-fns';
 
 export const INITIAL_TASKS: Task[] = [
@@ -33,6 +33,8 @@ export const INITIAL_TASKS: Task[] = [
   }
 ];
 
+export const INITIAL_TOPICS: TopicReview[] = [];
+
 export const INITIAL_PROBLEMS: DSAProblem[] = [
   {
     id: '101',
@@ -63,6 +65,7 @@ export const INITIAL_PROBLEMS: DSAProblem[] = [
 export const INITIAL_STATE: AppState = {
   tasks: INITIAL_TASKS,
   problems: INITIAL_PROBLEMS,
+  topics: INITIAL_TOPICS,
   userSettings: {
     name: 'Aditya',
     internshipDate: '2025-06-01', // Default target
@@ -77,4 +80,12 @@ export const SRS_INTERVALS = {
   3: 7, // 7 days
   4: 14, // 14 days
   5: 30, // 30 days
+};
+
+export const TOPIC_SRS_INTERVALS = {
+  1: 5,  // 5 days
+  2: 15, // 15 days
+  3: 30, // 30 days
+  4: 45, // 45 days
+  5: 60, // 60 days
 };

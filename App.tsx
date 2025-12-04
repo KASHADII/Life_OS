@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import KanbanBoard from './components/KanbanBoard';
 import DSATracker from './components/DSATracker';
+import TopicReviewer from './components/TopicReviewer';
 import Settings from './components/Settings';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from './services/database';
@@ -47,6 +48,8 @@ const App: React.FC = () => {
         return <KanbanBoard tasks={state.tasks} setTasks={(tasks) => setState(prev => ({...prev, tasks: typeof tasks === 'function' ? tasks(prev.tasks) : tasks}))} />;
       case 'dsa':
         return <DSATracker problems={state.problems} setProblems={(probs) => setState(prev => ({...prev, problems: typeof probs === 'function' ? probs(prev.problems) : probs}))} />;
+      case 'topics':
+        return <TopicReviewer topics={state.topics} setTopics={(topics) => setState(prev => ({...prev, topics: typeof topics === 'function' ? topics(prev.topics) : topics}))} />;
       case 'settings':
         return <Settings state={state} updateSettings={updateSettings} />;
       default:

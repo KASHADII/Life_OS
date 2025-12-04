@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, KanbanSquare, BrainCircuit, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, KanbanSquare, BrainCircuit, Settings, BookOpen, LogOut } from 'lucide-react';
 import { View } from '../types';
 
 interface SidebarProps {
@@ -12,6 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'kanban', label: 'Tasks', icon: KanbanSquare },
     { id: 'dsa', label: 'DSA Review', icon: BrainCircuit },
+    { id: 'topics', label: 'Topic Reviewer', icon: BookOpen },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
