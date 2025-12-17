@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
 import { Activity, CheckCircle2, Code2, Flame, Trophy } from 'lucide-react';
+import { DateTime, Interval } from 'luxon';
 import GlassCard from './GlassCard';
 import { AppState } from '../types';
 import { getMotivationalQuote } from '../services/geminiService';
@@ -12,7 +12,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ state }) => {
   const [quote, setQuote] = useState<string>("Loading motivation...");
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     getMotivationalQuote().then(setQuote);
@@ -20,13 +20,29 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const target = new Date(state.userSettings.internshipDate);
-      const now = new Date();
-      setTimeLeft({
-        days: differenceInDays(target, now),
-        hours: differenceInHours(target, now) % 24,
-        minutes: differenceInMinutes(target, now) % 60,
-      });
+      const zone = 'Asia/Kolkata';
+
+      const target = DateTime.fromISO(state.userSettings.internshipDate, { zone }).endOf('day');
+      const now = DateTime.now().setZone(zone);
+
+      if (now >= target) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const duration = Interval.fromDateTimes(now, target).toDuration([
+        'days',
+        'hours',
+        'minutes',
+        'seconds',
+      ]);
+
+      const days = Math.floor(duration.days || 0);
+      const hours = Math.floor(duration.hours || 0);
+      const minutes = Math.floor(duration.minutes || 0) % 60;
+      const seconds = Math.floor(duration.seconds || 0) % 60;
+
+      setTimeLeft({ days, hours, minutes, seconds });
     }, 1000);
     return () => clearInterval(timer);
   }, [state.userSettings.internshipDate]);
@@ -60,7 +76,8 @@ const Dashboard: React.FC<DashboardProps> = ({ state }) => {
                   {[
                     { val: timeLeft.days, label: 'Days' },
                     { val: timeLeft.hours, label: 'Hours' },
-                    { val: timeLeft.minutes, label: 'Minutes' }
+                    { val: timeLeft.minutes, label: 'Minutes' },
+                    { val: timeLeft.seconds, label: 'Seconds' },
                   ].map((item, idx) => (
                     <div key={idx} className="flex flex-col items-center">
                       <span className="text-5xl md:text-7xl font-bold font-display tabular-nums tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/50 drop-shadow-sm">

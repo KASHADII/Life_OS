@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Check, Clock, RefreshCcw, Plus, CheckCircle2, Trash2, Tag, NotebookPen } from 'lucide-react';
+import { DateTime } from 'luxon';
 import { TopicReview, SRSStage } from '../types';
 import GlassCard from './GlassCard';
 import { TOPIC_SRS_INTERVALS } from '../constants';
-import { addDays, format, parseISO } from 'date-fns';
 import AddTopicModal from './AddTopicModal';
 
 interface TopicReviewerProps {
@@ -18,9 +18,13 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
 
   const getFilteredTopics = () => {
-    const now = new Date();
+    const zone = 'Asia/Kolkata';
+    const now = DateTime.now().setZone(zone);
     if (filter === 'Mastered') return topics.filter(t => t.status === 'Mastered');
-    if (filter === 'Due') return topics.filter(t => t.status !== 'Mastered' && new Date(t.nextReview) <= now);
+    if (filter === 'Due') return topics.filter(t => {
+      const next = DateTime.fromISO(t.nextReview, { zone });
+      return t.status !== 'Mastered' && next <= now;
+    });
     return topics;
   };
 
@@ -29,21 +33,25 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
       if (t.id !== id) return t;
 
       if (success) {
+        const zone = 'Asia/Kolkata';
+        const now = DateTime.now().setZone(zone);
         const nextStage = Math.min(t.stage + 1, 5) as SRSStage;
         const isMastered = nextStage === 5 && t.stage === 5;
         return {
           ...t,
-          lastReviewed: new Date().toISOString(),
-          nextReview: addDays(new Date(), TOPIC_SRS_INTERVALS[nextStage]).toISOString(),
+          lastReviewed: now.toISO(),
+          nextReview: now.plus({ days: TOPIC_SRS_INTERVALS[nextStage] }).toISO(),
           stage: nextStage,
           status: isMastered ? 'Mastered' : 'Learning'
         };
       } else {
+        const zone = 'Asia/Kolkata';
+        const now = DateTime.now().setZone(zone);
         return {
           ...t,
           stage: 1,
-          lastReviewed: new Date().toISOString(),
-          nextReview: addDays(new Date(), TOPIC_SRS_INTERVALS[1]).toISOString(),
+          lastReviewed: now.toISO(),
+          nextReview: now.plus({ days: TOPIC_SRS_INTERVALS[1] }).toISO(),
           status: 'Learning',
         };
       }
@@ -53,7 +61,10 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
   const handleAddTopic = (newTopic: TopicReview) => {
     setTopics(prev => [...prev, newTopic]);
 
-    const isDue = new Date(newTopic.nextReview) <= new Date();
+    const zone = 'Asia/Kolkata';
+    const now = DateTime.now().setZone(zone);
+    const next = DateTime.fromISO(newTopic.nextReview, { zone });
+    const isDue = next <= now;
     if (isDue && filter === 'Mastered') setFilter('Due');
 
     setToast({ message: 'Topic added successfully!', visible: true });
@@ -160,7 +171,7 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
                   )}
                   <div className="flex items-center gap-4 mt-2 text-xs text-glass-muted">
                     <span className="flex items-center gap-1">
-                      <Clock size={12} /> Next Review: {format(parseISO(topic.nextReview), 'MMM d')}
+                      <Clock size={12} /> Next Review: {DateTime.fromISO(topic.nextReview).setZone('Asia/Kolkata').toFormat('MMM d')}
                     </span>
                     <span className="flex items-center gap-1">
                       <RefreshCcw size={12} /> Stage: {topic.stage}/5

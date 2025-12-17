@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, AlertCircle, Link as LinkIcon, Calendar, Tag, Layers, AlignLeft, Hash } from 'lucide-react';
+import { DateTime } from 'luxon';
 import { DSAProblem, SRSStage } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { SRS_INTERVALS } from '../constants';
-import { addDays } from 'date-fns';
 
 interface AddProblemModalProps {
   isOpen: boolean;
@@ -55,11 +55,11 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSa
       return;
     }
 
-    // Calculate Next Review based on Learned On date + Stage interval
-    // Defaulting to Stage 1 logic if newly added
-    const learnedDate = new Date(formData.learnedOn);
+    // Calculate Next Review based on Learned On date + Stage interval (IST, Luxon)
+    const zone = 'Asia/Kolkata';
+    const learnedDate = DateTime.fromISO(formData.learnedOn, { zone }).startOf('day');
     const interval = SRS_INTERVALS[formData.stage as SRSStage] || 1;
-    const nextReview = addDays(learnedDate, interval).toISOString();
+    const nextReview = learnedDate.plus({ days: interval }).toISO();
 
     const newProblem: DSAProblem = {
       id: uuidv4(),
@@ -67,8 +67,8 @@ const AddProblemModal: React.FC<AddProblemModalProps> = ({ isOpen, onClose, onSa
       link: formData.link,
       topic: formData.topics,
       difficulty: formData.difficulty as 'Easy' | 'Medium' | 'Hard',
-      learnedOn: learnedDate.toISOString(),
-      lastReviewed: learnedDate.toISOString(), // Assuming learned today means reviewed today
+      learnedOn: learnedDate.toISO(),
+      lastReviewed: learnedDate.toISO(), // Assuming learned today means reviewed today
       nextReview: nextReview,
       stage: formData.stage as SRSStage,
       status: formData.stage >= 5 ? 'Mastered' : 'Learning',

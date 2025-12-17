@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Check, Clock, ExternalLink, Lightbulb, PlayCircle, RefreshCcw, Plus, CheckCircle2, Trash2 } from 'lucide-react';
+import { DateTime } from 'luxon';
 import { DSAProblem, SRSStage, AppState } from '../types';
 import GlassCard from './GlassCard';
 import { SRS_INTERVALS } from '../constants';
-import { addDays, format, isAfter, isBefore, parseISO } from 'date-fns';
 import { getDSAHint } from '../services/geminiService';
 import AddProblemModal from './AddProblemModal';
 
@@ -24,9 +24,13 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
 
   const getFilteredProblems = () => {
-    const now = new Date();
+    const zone = 'Asia/Kolkata';
+    const now = DateTime.now().setZone(zone);
     if (filter === 'Mastered') return problems.filter(p => p.status === 'Mastered');
-    if (filter === 'Due') return problems.filter(p => p.status !== 'Mastered' && new Date(p.nextReview) <= now);
+    if (filter === 'Due') return problems.filter(p => {
+      const next = DateTime.fromISO(p.nextReview, { zone });
+      return p.status !== 'Mastered' && next <= now;
+    });
     return problems;
   };
 
@@ -35,22 +39,26 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
         if (p.id !== id) return p;
 
         if (success) {
+            const zone = 'Asia/Kolkata';
+            const now = DateTime.now().setZone(zone);
             const nextStage = Math.min(p.stage + 1, 5) as SRSStage;
             const isMastered = nextStage === 5 && p.stage === 5; // Simplified mastery logic
             return {
                 ...p,
-                lastReviewed: new Date().toISOString(),
-                nextReview: addDays(new Date(), SRS_INTERVALS[nextStage]).toISOString(),
+                lastReviewed: now.toISO(),
+                nextReview: now.plus({ days: SRS_INTERVALS[nextStage] }).toISO(),
                 stage: nextStage,
                 status: isMastered ? 'Mastered' : 'Learning'
             };
         } else {
+            const zone = 'Asia/Kolkata';
+            const now = DateTime.now().setZone(zone);
             // Reset if failed
             return {
                 ...p,
                 stage: 1,
-                lastReviewed: new Date().toISOString(),
-                nextReview: addDays(new Date(), 1).toISOString(),
+                lastReviewed: now.toISO(),
+                nextReview: now.plus({ days: 1 }).toISO(),
             };
         }
     }));
@@ -72,7 +80,10 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
     setProblems(prev => [...prev, newProblem]);
     
     // Check if the new problem is due today, if so switch to Due filter or All to show it
-    const isDue = new Date(newProblem.nextReview) <= new Date();
+    const zone = 'Asia/Kolkata';
+    const now = DateTime.now().setZone(zone);
+    const next = DateTime.fromISO(newProblem.nextReview, { zone });
+    const isDue = next <= now;
     if (isDue && filter === 'Mastered') setFilter('Due');
 
     // Show Toast
@@ -185,7 +196,7 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
                             )}
                             <div className="flex items-center gap-4 mt-2 text-xs text-glass-muted">
                                 <span className="flex items-center gap-1">
-                                    <Clock size={12} /> Next Review: {format(parseISO(problem.nextReview), 'MMM d')}
+                                    <Clock size={12} /> Next Review: {DateTime.fromISO(problem.nextReview).setZone('Asia/Kolkata').toFormat('MMM d')}
                                 </span>
                                 <span className="flex items-center gap-1">
                                     <RefreshCcw size={12} /> Stage: {problem.stage}/5
