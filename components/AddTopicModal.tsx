@@ -6,13 +6,25 @@ import { v4 as uuidv4 } from 'uuid';
 import { TOPIC_SRS_INTERVALS } from '../constants';
 import { addDays } from 'date-fns';
 
+type AreaColor = 'blue' | 'green' | 'yellow' | 'pink';
+
 interface AddTopicModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (topic: TopicReview) => void;
+  existingAreas: string[];
+  areaColors: Record<string, AreaColor>;
+  onChangeAreaColor: (area: string, color: AreaColor) => void;
 }
 
-const AddTopicModal: React.FC<AddTopicModalProps> = ({ isOpen, onClose, onSave }) => {
+const AddTopicModal: React.FC<AddTopicModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  existingAreas,
+  areaColors,
+  onChangeAreaColor,
+}) => {
   const [formData, setFormData] = useState({
     title: '',
     area: '',
@@ -146,17 +158,54 @@ const AddTopicModal: React.FC<AddTopicModalProps> = ({ isOpen, onClose, onSave }
                   {errors.title && <p className="text-xs text-red-400 ml-1 flex items-center gap-1"><AlertCircle size={10} /> {errors.title}</p>}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-glass-muted ml-1">Area / Subject <span className="text-glass-muted text-[10px]"></span></label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.area}
-                      onChange={e => setFormData({ ...formData, area: e.target.value })}
-                      placeholder="e.g. OS, DBMS, System Design"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pl-3 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all"
-                    />
+                <div className="space-y-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-glass-muted ml-1">Area / Subject</label>
+                    <div className="relative flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={formData.area}
+                        onChange={e => setFormData({ ...formData, area: e.target.value })}
+                        placeholder="e.g. OS, DBMS, System Design"
+                        className="flex-1 bg-white/5 border border-white/10 rounded-xl p-3 pl-3 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all"
+                      />
+                      {formData.area.trim() && (
+                        <div className="flex items-center gap-1">
+                          {(['blue','green','yellow','pink'] as AreaColor[]).map(color => (
+                            <button
+                              key={color}
+                              type="button"
+                              onClick={() => onChangeAreaColor(formData.area.trim(), color)}
+                              className={`w-4 h-4 rounded-full border border-white/30 ${
+                                color === 'blue' ? 'bg-blue-500/70' :
+                                color === 'green' ? 'bg-emerald-500/70' :
+                                color === 'yellow' ? 'bg-amber-400/80' :
+                                'bg-pink-500/70'
+                              } ${areaColors[formData.area.trim()] === color ? 'ring-1 ring-white/80' : ''}`}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {existingAreas.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-[11px] text-glass-muted ml-1">Previously used areas</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {existingAreas.map(area => (
+                          <button
+                            key={area}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, area }))}
+                            className="px-2 py-0.5 rounded-full text-[11px] bg-white/5 border border-white/10 text-glass-muted hover:bg-white/10 hover:text-white transition-colors"
+                          >
+                            {area}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

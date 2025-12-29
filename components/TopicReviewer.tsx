@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Check, Clock, RefreshCcw, Plus, CheckCircle2, Trash2, Tag, NotebookPen } from 'lucide-react';
 import { DateTime } from 'luxon';
@@ -16,6 +16,46 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
   const [filter, setFilter] = useState<'Due' | 'All' | 'Mastered'>('Due');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
+
+  const [areaColors, setAreaColors] = useState<Record<string, 'blue' | 'green' | 'yellow' | 'pink'>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const stored = localStorage.getItem('topicAreaColors');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('topicAreaColors', JSON.stringify(areaColors));
+    } catch {
+      // ignore
+    }
+  }, [areaColors]);
+
+  const allAreas: string[] = Array.from(
+    new Set<string>(
+      topics.flatMap((t) => (t.area ? [t.area] : ([] as string[])))
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  const getAreaClasses = (area: string) => {
+    const color = areaColors[area] || 'blue';
+    switch (color) {
+      case 'green':
+        return 'bg-emerald-500/15 text-emerald-100 border border-emerald-500/30';
+      case 'yellow':
+        return 'bg-amber-500/15 text-amber-100 border border-amber-500/30';
+      case 'pink':
+        return 'bg-pink-500/15 text-pink-100 border border-pink-500/30';
+      case 'blue':
+      default:
+        return 'bg-blue-500/15 text-blue-100 border border-blue-500/30';
+    }
+  };
 
   const getFilteredTopics = () => {
     const zone = 'Asia/Kolkata';
@@ -150,12 +190,17 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     {topic.area && (
-                      <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-blue-500/40 text-blue-300 bg-blue-500/10">
+                      <span
+                        className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${getAreaClasses(topic.area)}`}
+                      >
                         {topic.area}
                       </span>
                     )}
                     {topic.tags && topic.tags.map(tag => (
-                      <span key={tag} className="text-xs text-glass-muted bg-white/5 px-2 py-0.5 rounded flex items-center gap-1">
+                      <span
+                        key={tag}
+                        className="text-xs text-glass-muted bg-white/5 px-2 py-0.5 rounded flex items-center gap-1"
+                      >
                         <Tag size={10} /> {tag}
                       </span>
                     ))}
@@ -213,6 +258,14 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddTopic}
+        existingAreas={allAreas}
+        areaColors={areaColors}
+        onChangeAreaColor={(area, color) =>
+          setAreaColors(prev => ({
+            ...prev,
+            [area]: color,
+          }))
+        }
       />
     </div>
   );
