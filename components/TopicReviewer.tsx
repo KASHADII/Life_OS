@@ -59,10 +59,10 @@ const TopicReviewer: React.FC<TopicReviewerProps> = ({ topics, setTopics }) => {
 
   const getFilteredTopics = () => {
     const zone = 'Asia/Kolkata';
-    const now = DateTime.now().setZone(zone);
+    const now = DateTime.now().setZone(zone).startOf('day');
     if (filter === 'Mastered') return topics.filter(t => t.status === 'Mastered');
     if (filter === 'Due') return topics.filter(t => {
-      const next = DateTime.fromISO(t.nextReview, { zone });
+      const next = DateTime.fromISO(t.nextReview, { zone }).startOf('day');
       return t.status !== 'Mastered' && next <= now;
     });
     return topics;

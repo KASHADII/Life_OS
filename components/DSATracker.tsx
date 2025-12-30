@@ -25,10 +25,10 @@ const DSATracker: React.FC<DSATrackerProps> = ({ problems, setProblems }) => {
 
   const getFilteredProblems = () => {
     const zone = 'Asia/Kolkata';
-    const now = DateTime.now().setZone(zone);
+    const now = DateTime.now().setZone(zone).startOf('day');
     if (filter === 'Mastered') return problems.filter(p => p.status === 'Mastered');
     if (filter === 'Due') return problems.filter(p => {
-      const next = DateTime.fromISO(p.nextReview, { zone });
+      const next = DateTime.fromISO(p.nextReview, { zone }).startOf('day');
       return p.status !== 'Mastered' && next <= now;
     });
     return problems;
